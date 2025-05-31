@@ -12,6 +12,9 @@ public class CreateImageTarget : MonoBehaviour
     string[] ranks = { "ace", "king", "queen", "jack", "ten", "nine", "eight", "seven", "six", "five", "four", "three", "two" };
     string[] suits = { "clubs", "spades", "hearts", "diamonds" };
 
+    string[] alreadyInUse = new string[52];
+   
+
     public GameObject common;
     public GameObject rare;
     public GameObject epic;
@@ -30,7 +33,7 @@ public class CreateImageTarget : MonoBehaviour
     void OnVuforiaInitialized(VuforiaInitError error)
     {
         if (error == VuforiaInitError.NONE)
-            OnVuforiaStarted();
+        OnVuforiaStarted();
     }
 
     // Load and activate a data set at the given path.
@@ -45,40 +48,50 @@ public class CreateImageTarget : MonoBehaviour
             {
                 targetName = ranks[j] + "of" + suits[i];
                 var mImageTarget = VuforiaBehaviour.Instance.ObserverFactory.CreateImageTarget(dataSetPath, targetName);
-
-                if (mImageTarget == null)
-                {
-                    Debug.LogError("Failed to create image target: " + targetName);
-                    continue;
-                }
-
             
                 mImageTarget.OnTargetStatusChanged += OnTargetStatusChanged;
-
-                // Initialize dictionary entry with null (no prefab spawned yet)
-                //spawnedPrefabs[targetName] = null;
             }
         }
+
+        //add the end of move card
+        var blackCard = VuforiaBehaviour.Instance.ObserverFactory.CreateImageTarget(dataSetPath, "blackcard");
+        blackCard.OnTargetStatusChanged += OnTargetStatusChanged;
 
     }
 
     void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
     {
+
         string targetName = behaviour.TargetName;
+
+        for (int i=0; i<alreadyInUse.Length;i++){
+            if(alreadyInUse[i]==targetName){
+                return;
+            }else{
+                if(alreadyInUse[i]==null){
+                    alreadyInUse[i]=targetName;
+                    break;
+                }
+            }
+
+        }
+
+
+
         GameObject prefabToPlace = GetPrefabForTarget(targetName);
-        
+        //needs change to that function 
 
 
         if (status.Status == Status.TRACKED || status.Status == Status.EXTENDED_TRACKED )
         {
 
            
-                GameObject spawned = Instantiate(prefabToPlace, behaviour.transform);
-                spawned.transform.localPosition = Vector3.zero;
-                spawned.transform.localRotation = Quaternion.identity;
-                //spawnedPrefabs[targetName] = spawned;
+            GameObject spawned = Instantiate(prefabToPlace, behaviour.transform);
+            spawned.transform.localPosition = Vector3.zero;
+            spawned.transform.localRotation = Quaternion.identity;
+            //spawnedPrefabs[targetName] = spawned;
 
-                Debug.Log($"Spawned prefab for target: {targetName}");
+            Debug.Log($"Spawned prefab for target: {targetName}");
         
         }
         

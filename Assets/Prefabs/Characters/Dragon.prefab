@@ -4852,7 +4852,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400142, guid: 7e35bd5abf60a234798b95ef300f64e2, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.2
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 400142, guid: 7e35bd5abf60a234798b95ef300f64e2, type: 3}
       propertyPath: m_LocalScale.z
@@ -4937,5 +4937,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   att: 0
   def: 0
+  hasAttackAnimation: 1
+  hasGetHitAnimation: 0
+  hasDieAnimation: 0
   attParticle: {fileID: 6651634799493241326}
-  defParticle: {fileID: 0}
+  getHitParticle: {fileID: 0}
+  dieParticle: {fileID: 0}

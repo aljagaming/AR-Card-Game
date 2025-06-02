@@ -21,6 +21,27 @@ public class CreateImageTarget : MonoBehaviour
     public GameObject legendary;
 
 
+    public GameObject Chicken;
+    public GameObject IceBoy;
+    public GameObject Skeleton;
+    public GameObject Spider;
+    public GameObject Drone;
+    public GameObject Turtle;
+    public GameObject Orc;
+    public GameObject WolfBoss;
+    public GameObject DogKnight;
+    public GameObject HumpbackWhale;
+    public GameObject MonsterX;
+    public GameObject Golem;
+    public GameObject Dragon;
+
+
+
+
+
+
+
+
 
     // Start is called before the first frame update
     
@@ -78,7 +99,7 @@ public class CreateImageTarget : MonoBehaviour
 
 
 
-        GameObject prefabToPlace = GetPrefabForTarget(targetName);
+        GameObject planeToPlace = GetPrefabPlane(targetName);
         //needs change to that function 
 
 
@@ -86,10 +107,17 @@ public class CreateImageTarget : MonoBehaviour
         {
 
            
-            GameObject spawned = Instantiate(prefabToPlace, behaviour.transform);
-            spawned.transform.localPosition = Vector3.zero;
-            spawned.transform.localRotation = Quaternion.identity;
+            GameObject plane = Instantiate(planeToPlace, behaviour.transform);
+            plane.transform.localPosition = Vector3.zero;
+            plane.transform.localRotation = Quaternion.identity;
             //spawnedPrefabs[targetName] = spawned;
+
+
+            GameObject monsterPrefab = GetPrefabMonster(targetName);
+            GameObject monster = Instantiate(monsterPrefab, plane.transform); // parented to plane
+            monster.transform.localPosition = Vector3.zero;
+            monster.transform.localRotation = Quaternion.identity;
+
 
             Debug.Log($"Spawned prefab for target: {targetName}");
         
@@ -101,7 +129,7 @@ public class CreateImageTarget : MonoBehaviour
 
 
 
-    GameObject GetPrefabForTarget(string targetName)
+    GameObject GetPrefabPlane(string targetName)
     {
         // Determine which prefab to use based on the suit in target name
         if (targetName.Contains("spades"))
@@ -117,4 +145,39 @@ public class CreateImageTarget : MonoBehaviour
     }
 
 
+
+    GameObject GetPrefabMonster(string targetName)
+    {
+    
+        if (targetName.Contains("ace"))
+            return Chicken;
+        else if (targetName.Contains("two"))
+            return IceBoy;
+        else if (targetName.Contains("three"))
+            return Skeleton;
+        else if (targetName.Contains("four"))
+            return Spider;
+        else if (targetName.Contains("five"))
+            return Drone;
+        else if (targetName.Contains("six"))
+            return Turtle;
+        else if (targetName.Contains("seven"))
+            return Orc;
+        else if (targetName.Contains("eight"))
+            return WolfBoss;
+        else if (targetName.Contains("nine"))
+            return DogKnight;
+        else if (targetName.Contains("ten"))
+            return HumpbackWhale;
+        else if (targetName.Contains("jack"))
+            return MonsterX;
+        else if (targetName.Contains("queen"))
+            return Golem;
+        else if (targetName.Contains("king"))
+            return Dragon;
+        else
+            return null;
+    }
+
+    
 }

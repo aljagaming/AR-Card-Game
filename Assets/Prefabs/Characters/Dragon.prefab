@@ -4936,7 +4936,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   att: 1000
-  def: 1000
+  def: 1500
   hasAttackAnimation: 1
   hasGetHitAnimation: 0
   hasDieAnimation: 0

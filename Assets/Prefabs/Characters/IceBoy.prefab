@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 84e7c2a21aecc2842877b031d1ce3557, type: 3}
       propertyPath: m_Name
-      value: Hero_Ice_Body
+      value: IceBoy
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 84e7c2a21aecc2842877b031d1ce3557, type: 3}
       propertyPath: m_Controller
@@ -93,8 +93,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f18166a3c31d941099566b8797f230ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  att: 0
-  def: 0
+  att: 80
+  def: 100
   hasAttackAnimation: 1
   hasGetHitAnimation: 0
   hasDieAnimation: 0

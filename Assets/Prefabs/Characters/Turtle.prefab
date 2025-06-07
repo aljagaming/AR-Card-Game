@@ -1049,8 +1049,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f18166a3c31d941099566b8797f230ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  att: 0
-  def: 0
+  att: 230
+  def: 500
   hasAttackAnimation: 1
   hasGetHitAnimation: 1
   hasDieAnimation: 1

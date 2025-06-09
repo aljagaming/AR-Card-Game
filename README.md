@@ -1,2 +1,2 @@
 # AR-Card-Game
-AR Card Game in unity 
+Yu-Gi-Ah! - AR Card Game in unity 

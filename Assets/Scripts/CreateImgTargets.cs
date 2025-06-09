@@ -4,6 +4,7 @@ using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class CreateImageTarget : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class CreateImageTarget : MonoBehaviour
     string[] suits = { "clubs", "spades", "hearts", "diamonds" };
 
     string[] alreadyInUse = new string[52];
+
+
+    public int redHealth=4000;
+    public int blueHealth=4000;
 
     private GameObject[] redArmy = new GameObject[3];
 
@@ -48,7 +53,6 @@ public class CreateImageTarget : MonoBehaviour
     //two sides A and B
     //both defend their "hearth"
 
-    private GameObject referencePlane;
     private GameObject blueTurnIndicator;
     private GameObject redTurnIndicator;
     private GameObject popUp;
@@ -57,18 +61,21 @@ public class CreateImageTarget : MonoBehaviour
     private GameObject blueBase;
     private GameObject redBase;
 
+    private GameObject wRed;
+    private GameObject wBlue;
+
+
 
     
     private bool redTurn; // whos turn it is, red is to the left blue is to the right;
     private bool blueTurn;
 
+    private bool endOfTurnWaitForPopUp=false;
+
+
+    //private ObserverBehaviour blackCard;
 
     private GeneralisedController scriptInstance;
-
-    
-
-
-
 
 
 
@@ -85,6 +92,12 @@ public class CreateImageTarget : MonoBehaviour
         redBase=GameObject.Find("redBase");
         popUp=GameObject.Find("PopUp");
 
+
+        wBlue=GameObject.Find("WictoryBlue");
+        wBlue.SetActive(false);
+        wRed=GameObject.Find("WictoryRed");
+        wRed.SetActive(false);
+
         popUpText = popUp.GetComponent<TMP_Text>();
         popUp.SetActive(false);
 
@@ -93,40 +106,50 @@ public class CreateImageTarget : MonoBehaviour
 
 
 
-
-        if(UnityEngine.Random.Range(0, 2)==0){
-
-            redTurn=false;
-            ChangeTurns();
-        }else{
-            redTurn=true;
-            ChangeTurns();
+        if (UnityEngine.Random.Range(0, 2) == 0)
+            {
+                redTurn = false;
+                blueTurn = true;
+            }
+        else
+        {
+            redTurn = true;
+            blueTurn = false;
         }
 
 
-
+        UpdateTurnIndicators();
         VuforiaApplication.Instance.OnVuforiaInitialized += OnVuforiaInitialized;
-       
-       
-       
-       
-        referencePlane=GameObject.Find("ReferencePlane");
-        /*
-        
-        
-        GameObject plane = Instantiate(rare, Vector3.zero, Quaternion.identity);
-
-
-        GameObject dogKnight = Instantiate(HumpbackWhale, plane.transform);
-    
-        Debug.Log("DogKnight is now a child of the plane!");
-        
-        */
-        
-
-
     }
     
+    void Update(){
+
+
+
+        //Victory conditions
+        if (redHealth <= 0)
+        {
+
+
+            StartCoroutine(wonBlue(8f));
+            StartCoroutine(destroyMonsters(2f,redArmy));
+            StartCoroutine(destroyMonsters(4f,blueArmy));
+            StartCoroutine(destroyHp(6f));
+
+            
+            enabled = false; 
+
+        }else if (blueHealth <= 0){
+
+            StartCoroutine(wonRed(8f));
+            StartCoroutine(destroyMonsters(2f,blueArmy));
+            StartCoroutine(destroyMonsters(4f,redArmy));
+            StartCoroutine(destroyHp(6f));
+            
+            enabled = false; 
+        }
+    }
+
 
     void OnVuforiaInitialized(VuforiaInitError error)
     {
@@ -162,15 +185,28 @@ public class CreateImageTarget : MonoBehaviour
     void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
     {
 
-        string targetName = behaviour.TargetName;
-
-
+    string targetName = behaviour.TargetName;
         if(targetName== "blackcard"){
 
             Debug.Log("End of turn");
             endOfTurn();
             return;
         }
+
+
+        if(redTurn){
+            if(IsArmyFull(redArmy)){
+                writePopUp("Red's Army is Full (Max 3 monsters)");
+                return;
+            }
+        }else{
+            if(IsArmyFull(blueArmy)){
+                writePopUp("Blue's Army is Full (Max 3 monsters)");
+                return;
+            }
+        }
+
+
 
 
         for (int i=0; i<alreadyInUse.Length;i++){
@@ -210,26 +246,46 @@ public class CreateImageTarget : MonoBehaviour
             scriptInstance.att=(int)(scriptInstance.att*(1+plainBonuses(targetName)));
             scriptInstance.def=(int)(scriptInstance.def*(1+plainBonuses(targetName)));
 
+            
+
+
+
 
 
             if(redTurn){
-                scriptInstance.turnTowards=blueBase;
+
+                scriptInstance.iAmOnRedTeam=true;
+
+                if(targetName.Contains("ten") || targetName.Contains("four")){
+                    scriptInstance.turnTowards=redBase; //Humback whale model is insanciably dumb -aka its front and back are flipped 
+                }else{
+                    scriptInstance.turnTowards=blueBase; //default
+                }
 
                 for (int i=0; i<redArmy.Length; i++){
                     if(redArmy[i]==null){
                         redArmy[i]=plane;
+                        break;
                     }
                 }
 
 
 
             }else{
+                
+                scriptInstance.iAmOnRedTeam=false;
 
-                scriptInstance.turnTowards=redBase;
+                if(targetName.Contains("ten") || targetName.Contains("four")){
+                    scriptInstance.turnTowards=blueBase; //Humback whale model is insanciably dumb -aka its front and back are flipped 
+                }else{
+                    scriptInstance.turnTowards=redBase; //default
+                }
+
 
                 for (int i=0; i<blueArmy.Length; i++){
                     if(blueArmy[i]==null){
                         blueArmy[i]=plane;
+                        break;
                     }
                 }
 
@@ -241,6 +297,84 @@ public class CreateImageTarget : MonoBehaviour
         
 
     }
+
+
+    void ChangeTurns()
+    {
+        redTurn = !redTurn;
+        blueTurn = !blueTurn;
+        UpdateTurnIndicators();
+    }
+
+    void UpdateTurnIndicators(){
+        redTurnIndicator.SetActive(redTurn);
+        blueTurnIndicator.SetActive(blueTurn);
+
+        if (redTurn)
+            writePopUp("Red's Turn");
+        else
+          writePopUp("Blue's Turn");
+    }   
+
+
+
+    void endOfTurn(){
+        if(endOfTurnWaitForPopUp){ //this is so that turn cant be changed so oftenly and have to wait for popup to be done
+            return;
+        }
+
+        GeneralisedController attackingMonsterScript;
+        
+
+        if(redTurn){
+            for (int i=0; i<redArmy.Length; i++){
+                if(redArmy[i]!=null){
+                    attackingMonsterScript=redArmy[i].transform.GetChild(1).GetComponent<GeneralisedController>(); //its the second child of the plane...cos the first one is the particles 
+
+                    if (attackingMonsterScript != null){
+                    attackingMonsterScript.TriggerAttack();
+                    }
+                }
+            }
+        }else{
+            for (int i=0; i<blueArmy.Length; i++){
+
+          
+                if(blueArmy[i]!=null){
+                    attackingMonsterScript=blueArmy[i].transform.GetChild(1).GetComponent<GeneralisedController>(); //its the second child of the plane...cos the first one is the particles 
+
+                    if (attackingMonsterScript != null){
+                    attackingMonsterScript.TriggerAttack();
+                    }
+                }
+            }
+        }
+
+
+
+
+        ChangeTurns();
+    }
+
+
+    void writePopUp(string message){
+        popUpText.text = message;
+        popUp.SetActive(true);
+        endOfTurnWaitForPopUp=true; //so that turns wouldnt be scikkep all the time- it makes a pop and then it has to wait for it s
+        StartCoroutine(HidePopup(3f));
+    }
+
+
+
+
+    IEnumerator HidePopup(float delay)
+    {
+        yield return new WaitForSeconds(delay);  
+        popUp.SetActive(false);
+        endOfTurnWaitForPopUp=false;    
+    }
+
+
 
 
 
@@ -258,6 +392,22 @@ public class CreateImageTarget : MonoBehaviour
             return common;
         else
             return null;
+    }
+
+
+    float plainBonuses(string targetName){
+
+        // Determines how much points to return 
+        if (targetName.Contains("spades"))
+            return 0.25f;
+        else if (targetName.Contains("hearts"))
+            return 0.2f;
+        else if (targetName.Contains("diamonds"))
+            return 0.1f;
+        else if (targetName.Contains("clubs"))
+            return 0f;
+        else
+            return 0f;
     }
 
 
@@ -295,59 +445,59 @@ public class CreateImageTarget : MonoBehaviour
             return null;
     }
 
-
-
-    void ChangeTurns(){
-        if(redTurn){
-            redTurn=false;
-            blueTurn=true;
-            redTurnIndicator.SetActive(false);
-            blueTurnIndicator.SetActive(true);
-
-            writePopUp("Blue's Turn");
-        }else{
-            redTurn=true;
-            blueTurn=false;
-            blueTurnIndicator.SetActive(false);
-            redTurnIndicator.SetActive(true);
-            writePopUp("Red's Turn");
+    bool IsArmyFull(GameObject[] army)
+    {
+        for (int i = 0; i < army.Length; i++)
+        {
+            if (army[i] == null){
+                return false;
+            }
         }
+        return true; 
     }
 
 
-    void endOfTurn(){
 
+
+
+    IEnumerator destroyMonsters(float delay,GameObject[] arr)
+    {
+        yield return new WaitForSeconds(delay);
+        for (int i = 0; i < arr.Length; i++)
+        {
+            if (arr[i] != null){
+                Destroy(arr[i]);
+            }
+        }
+  
     }
 
 
-    float plainBonuses(string targetName){
 
-        // Determines how much points to return 
-        if (targetName.Contains("spades"))
-            return 0.15f;
-        else if (targetName.Contains("hearts"))
-            return 0.10f;
-        else if (targetName.Contains("diamonds"))
-            return 0.5f;
-        else if (targetName.Contains("clubs"))
-            return 0f;
-        else
-            return 0f;
+    IEnumerator destroyHp(float delay)
+    {
+        
+        yield return new WaitForSeconds(delay);
+        var hb= GameObject.Find("Canvas").GetComponent<healthBar>();
+
+        hb.deleteAll();
+
+        Destroy(GameObject.Find("playerBlue"));
+        Destroy(GameObject.Find("playerRed"));
+  
     }
 
-
-    void writePopUp(string message){
-        popUpText.text = message;
-        popUp.SetActive(true);
-        StartCoroutine(HidePopup(3f));
-    }
-
-    IEnumerator HidePopup(float delay)
+    IEnumerator wonBlue(float delay)
     {
         yield return new WaitForSeconds(delay);  
-        popUp.SetActive(false);             
+        wBlue.SetActive(true);
+        endOfTurnWaitForPopUp=false;    
     }
 
-
-
+    IEnumerator wonRed(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        wRed.SetActive(true);
+        endOfTurnWaitForPopUp=false;    
+    }
 }
